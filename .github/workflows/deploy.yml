@@ -1,0 +1,71 @@
+name: Deploy to VPS
+
+on:
+  workflow_run:
+    workflows: ["Build and push Docker image"]
+    types:
+      - completed
+
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: 'Tag Image (YY.MM.DD or latest)'
+        required: true
+        default: 'latest'
+        type: string
+
+jobs:
+  deploy:
+    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setting Image Tag
+        run: |
+          if [ "${{ github.event_name }}" == 'workflow_dispatch' ]; then
+            echo "TAG=${{ inputs.image_tag }}" >> $GITHUB_ENV
+            echo "Deploying rollback from: ${{ inputs.image_tag }}"
+          else
+            echo "TAG=latest" >> $GITHUB_ENV
+            echo "Deploying latest image"
+          fi
+
+      - name: Deploy application via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+
+          script: |
+            docker pull ${{ vars.DOCKER_USER }}/${{ vars.DOCKER_IMAGE }}:latest
+
+            docker stop ${{ vars.CONTAINER_NAME }} || true
+            docker rm ${{ vars.CONTAINER_NAME }} || true
+
+            NETWORK_ARGS=""
+            if [ -n "${{ vars.DOCKER_NETWORK }}" ]; then
+              NETWORK_ARGS="--network ${{ vars.DOCKER_NETWORK }}"
+            fi
+
+            docker run -d \
+              --name ${{ vars.CONTAINER_NAME }} \
+              -e 'DEBUG=False' \
+              -e 'DJANGO_SECRET_KEY=${{ secrets.DJANGO_SECRET_KEY }}' \
+              \
+              -e 'HOSTS=${{ vars.HOSTS }}' \
+              -e 'CORS_ALLOWED=${{ vars.CORS_ALLOWED }}' \
+              -e 'CSRF_TRUSTED=${{ vars.CSRF_TRUSTED }}' \
+              -e 'SESSION_DOMAIN=${{ vars.SESSION_DOMAIN }}' \
+              -e 'USE_SSL=True' \
+              \
+              -e 'DB_NAME=${{ vars.DB_NAME }}' \
+              -e 'DB_USER=${{ vars.DB_USER }}' \
+              -e 'DB_PASS=${{ secrets.DB_PASS }}' \
+              -e 'DB_HOST=${{ vars.DB_HOST }}' \
+              -e 'DB_PORT=${{ vars.DB_PORT }}' \
+              \
+              -p ${{ vars.VPS_PORT }}:4000 \
+              $NETWORK_ARGS \
+              ${{ vars.DOCKER_USER }}/${{ vars.DOCKER_IMAGE }}:${{ env.TAG }}
+
+            docker image prune -f
