@@ -31,9 +31,9 @@ class Config(BaseSettings):
     # --------------------------
     #      Network Settings
     # --------------------------
-    HOSTS: list[str] = Field(default_factory=list, validate_default=True)
-    CORS_ALLOWED: list[str] = Field(default_factory=list, validate_default=True)
-    CSRF_TRUSTED: list[str] = Field(default_factory=list, validate_default=True)
+    HOSTS: Any = Field(default_factory=list, validate_default=True)
+    CORS_ALLOWED: Any = Field(default_factory=list, validate_default=True)
+    CSRF_TRUSTED: Any = Field(default_factory=list, validate_default=True)
     SESSION_DOMAIN: str | None = Field(default=None)
     USE_SSL: bool = Field(default=False)
 
