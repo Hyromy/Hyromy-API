@@ -67,6 +67,10 @@ jobs:
               -e 'GH_USERNAME=${{ vars.GH_USERNAME }}' \
               -e 'GH_API_TOKEN=${{ secrets.GH_API_TOKEN }}' \
               \
+              -e 'CACHE_HOST=${{ vars.CACHE_HOST }}' \
+              -e 'CACHE_PORT=${{ vars.CACHE_PORT }}' \
+              -e 'CACHE_DB=${{ vars.CACHE_DB }}' \
+              \
               -p ${{ vars.VPS_PORT }}:4000 \
               $NETWORK_ARGS \
               ${{ vars.DOCKER_USER }}/${{ vars.DOCKER_IMAGE }}:${{ env.TAG }}
