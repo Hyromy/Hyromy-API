@@ -46,6 +46,19 @@ class Config(BaseSettings):
     DB_HOST: str | None = Field(default=None)
     DB_PORT: int | None = Field(default=None)
 
+    # ---------------------------
+    #     GITHUB API SETTINGS
+    # ---------------------------
+    GH_USERNAME: str = Field(default="Hyromy")
+    GH_API_TOKEN: str | None = Field(default=None)
+
+    # ----------------------
+    #     CACHE SETTINGS
+    # ----------------------
+    CACHE_HOST: str = Field(default="localhost")
+    CACHE_PORT: int = Field(default=6379)
+    CACHE_DB: int = Field(default=0)
+
     @field_validator("DJANGO_SECRET_KEY")
     @classmethod
     def validate_secret_key(cls, value: str, info: ValidationInfo) -> str:
@@ -67,6 +80,20 @@ class Config(BaseSettings):
             return value
 
         return ["*"] if info.data.get("DEBUG", False) else []
+
+    @field_validator("GH_API_TOKEN")
+    @classmethod
+    def check_gh_token(cls, value: str | None, info: ValidationInfo) -> str | None:
+        no_token = value is None
+        key = "GH_API_TOKEN"
+
+        if not info.data.get("DEBUG", False) and no_token:
+            raise ValueError(f"{key} must to be set in DEBUG=False")
+
+        if no_token:
+            print(f"{key} is not set. The request rate will be low")
+
+        return value
 
 
 config = Config()

@@ -2,7 +2,7 @@ name: Deploy to VPS
 
 on:
   workflow_run:
-    workflows: ["Build and push Docker image"]
+    workflows: ["Push Docker Image"]
     types:
       - completed
 
@@ -63,6 +63,13 @@ jobs:
               -e 'DB_PASS=${{ secrets.DB_PASS }}' \
               -e 'DB_HOST=${{ vars.DB_HOST }}' \
               -e 'DB_PORT=${{ vars.DB_PORT }}' \
+              \
+              -e 'GH_USERNAME=${{ vars.GH_USERNAME }}' \
+              -e 'GH_API_TOKEN=${{ secrets.GH_API_TOKEN }}' \
+              \
+              -e 'CACHE_HOST=${{ vars.CACHE_HOST }}' \
+              -e 'CACHE_PORT=${{ vars.CACHE_PORT }}' \
+              -e 'CACHE_DB=${{ vars.CACHE_DB }}' \
               \
               -p ${{ vars.VPS_PORT }}:4000 \
               $NETWORK_ARGS \
