@@ -34,3 +34,10 @@ testing = [
     "pytest (>=9.1.1,<10.0.0)",
     "pytest-django (>=4.14.0,<5.0.0)"
 ]
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "project.settings"
+python_files = ["test_*.py", "*_test.py", "tests_*.py", "*_tests.py", "test.py", "tests.py"]
+filterwarnings = [
+    "ignore:No directory at.*staticfiles:UserWarning",
+]

@@ -57,7 +57,7 @@ class Config(BaseSettings):
     # ----------------------
     CACHE_HOST: str = Field(default="localhost")
     CACHE_PORT: int = Field(default=6379)
-    CACHE_DB: int =Field(default=0)
+    CACHE_DB: int = Field(default=0)
 
     @field_validator("DJANGO_SECRET_KEY")
     @classmethod
