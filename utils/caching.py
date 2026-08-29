@@ -4,11 +4,13 @@ from typing import Any
 
 from redis import Redis
 
+from project.config import config
+
 
 class Cache:
-    def __init__(self, **kwargs):
+    def __init__(self, *args, **kwargs):
         kwargs.setdefault("decode_responses", True)
-        self.client = Redis(**kwargs)
+        self.client = Redis(*args, **kwargs)
 
     def get_set(
         self,
@@ -40,4 +42,8 @@ class Cache:
         return None
 
 
-cache_handler = Cache()
+cache_handler = Cache(
+    host=config.CACHE_HOST,
+    port=config.CACHE_PORT,
+    db=config.CACHE_DB,
+)
